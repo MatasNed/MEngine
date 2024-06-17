@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from connection import Connection
+from src.mengine.interfaces.i_connection import Connection
+
 
 class ProcessManager(ABC):
     @abstractmethod

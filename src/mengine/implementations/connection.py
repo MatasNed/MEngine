@@ -1,4 +1,6 @@
-from abstractconnection import Connection
+from src.mengine.interfaces.i_connection import Connection
+
+
 class ConcreteConnection(Connection):
     def __init__(self, requester_ip, path, payload):
         self.requester_ip = requester_ip
