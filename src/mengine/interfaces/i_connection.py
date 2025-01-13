@@ -7,9 +7,5 @@ class Connection(ABC):
         pass
 
     @abstractmethod
-    def get_path(self):
-        pass
-
-    @abstractmethod
     def get_payload(self):
         pass
