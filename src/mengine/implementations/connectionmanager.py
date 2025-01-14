@@ -23,5 +23,4 @@ class ConnectionManager(IConnectionManager):
             s.listen(5)
             while True:
                 conn, addr = s.accept()
-                print(f"delegating to process manager", conn, addr)
                 self.process_manager.handle_connection(addr, conn)
