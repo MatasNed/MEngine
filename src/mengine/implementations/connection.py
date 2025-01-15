@@ -1,16 +1,16 @@
-from src.mengine.interfaces.i_connection import Connection
+from src.mengine.interfaces.i_connection import IConnection
 
 
-class ConcreteConnection(Connection):
+class ConcreteConnection(IConnection):
 
     def __init__(self, requester_ip, payload):
-        self.requester_ip = requester_ip
+        self.requester_ip_and_port = tuple(requester_ip)
         self.payload = payload
         self.method = None
         self.version = None
 
     def get_requester_ip(self):
-        return self.requester_ip
+        return self.requester_ip_and_port
 
     def get_payload(self):
         return self.payload

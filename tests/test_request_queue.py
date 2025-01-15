@@ -16,6 +16,7 @@ def mock_connection():
     """ Creates a Connection instance for test cases """
     return ConcreteConnection(requester_ip="localhost", payload=b'123')
 
+
 class TestRequestQueue:
     """
         Test suite for the RequestQueue class to verify its queuing functionality.
