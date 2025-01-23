@@ -1,3 +1,4 @@
+import logging
 import socket
 import threading
 
@@ -29,7 +30,9 @@ class ConnectionManager(IConnectionManager):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.ip, self.port))
             s.listen(self.max_threads_on_cpu)
-            while True:
+            while threading.activeCount() < self.max_threads_on_cpu:
+                if threading.activeCount() + 10 == self.max_threads_on_cpu:
+                    logging.warning("Close to thread limit for the system")
                 conn, addr = s.accept()
                 worker = threading.Thread(
                     target=self.process_manager.handle_connection,

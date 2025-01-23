@@ -1,6 +1,7 @@
-from http.client import HTTPException
+import logging
 
-from src.mengine.implementations.connection import ConcreteConnection
+from src.mengine.exceptions.exceptions import ValidationError, HTTPException
+from src.mengine.implementations.concrete_connection import ConcreteConnection
 from src.mengine.interfaces.i_connection import IConnection
 from src.mengine.interfaces.i_process_manager import IProcessManager
 from src.mengine.utils.log_utils import logging_deco
@@ -72,11 +73,9 @@ class ConcreteProcessManager(IProcessManager):
                     self.queue.enque(new_connection)
 
                     print("Finished processing")
-                except ValueError:
-                    raise (
-                        ValueError,
-                        "Error has occured while attempting to parse and create a new conneciton"
-                    )
+                except ValidationError as error:
+                    logging.error("Caught error when parsing payload %s", error)
+
             else:
                 raise HTTPException
         return new_connection

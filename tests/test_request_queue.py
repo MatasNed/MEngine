@@ -1,7 +1,7 @@
 """ This is a testing suite for RequestQueue class """
 import pytest
 
-from src.mengine.implementations.connection import ConcreteConnection
+from src.mengine.implementations.concrete_connection import ConcreteConnection
 from src.mengine.implementations.request_queue import RequestQueue
 
 

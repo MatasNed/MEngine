@@ -16,12 +16,3 @@ class ServerManager:
     def start_up_conn(self) -> IConnectionManager:
         return self.conn_manager.start_up()
 
-    # Periodically dispatch queued requests
-    # TODO fix this mess
-    def dispatcher_daemon(self):
-        sleep(5)
-        n = 5
-        i = 0
-        while i < n:
-            self.dis.dispatch_request()
-            i += 1
