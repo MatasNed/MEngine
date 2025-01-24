@@ -34,7 +34,7 @@ class ConcreteProcessManager(IProcessManager):
             conn.sendall(response)
 
         except Exception as e:
-            print(f"Error while handling connection {addr}: {e}")
+            logging.exception(f"Unhandled exception on {addr}", e)
         finally:
             conn.close()
 

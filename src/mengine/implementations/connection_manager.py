@@ -30,6 +30,12 @@ class ConnectionManager(IConnectionManager):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.ip, self.port))
             s.listen(self.max_threads_on_cpu)
+
+            """
+            This manages overall process thread count not individual worker count
+            Hitting max thread limit will throw Runtime/OSErrors considere handling this differently 
+            """
+
             while threading.activeCount() < self.max_threads_on_cpu:
                 if threading.activeCount() + 10 == self.max_threads_on_cpu:
                     logging.warning("Close to thread limit for the system")

@@ -1,3 +1,4 @@
+import logging
 import socket
 
 from src.mengine.exceptions.exceptions import HTTPException
@@ -32,4 +33,5 @@ class RequestDispatcher(IRequestDispatcher):
                 response = b"\r\n".join(headers) + b"\r\n\r\n"
                 client_socket.send(response)
         except HTTPException as error:
-            print("HTTPException occured", error)
+            logging.exception("HTTPException has occured", error)
+
