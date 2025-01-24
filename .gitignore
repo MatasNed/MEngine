@@ -1,4 +1,5 @@
 .idea*
 .venv*
 test.log
+.DS_Store
 __pycache__/

@@ -1,12 +1,13 @@
-from urllib.error import HTTPError
+import logging
+import socket
 
+from src.mengine.exceptions.exceptions import HTTPException
 from src.mengine.interfaces.i_request_dispatcher import IRequestDispatcher
 from src.mengine.implementations.request_queue import RequestQueue
-import socket
+from src.mengine.validtors.http_validator import HTTPValidator
 
 
 class RequestDispatcher(IRequestDispatcher):
-    # temp hack
     # TODO fix
     host = "0.0.0.0"
     port = 9000
@@ -15,15 +16,22 @@ class RequestDispatcher(IRequestDispatcher):
         self.dispatch_queue = dispatch_queue
 
     def dispatch_request(self):
-        print('s')
         try:
             client_socket = socket.socket()
             client_socket.connect((self.host, self.port))
-            print('s1')
 
             while self.dispatch_queue.size() != 0:
                 message = self.dispatch_queue.dequeu()
-                boo = client_socket.send(str(message).encode())
-                # really?
-        except HTTPError:
-            print("HTTP Error from Dispatch")
+                payload = HTTPValidator.validate_payload(str(message.get_payload()).encode())
+                version = HTTPValidator.validate_version(message.get_version().value)
+                method = HTTPValidator.validate_method(message.get_method().value)
+                headers = [
+                    f"{method} / {version}".encode(),
+                    b"Content-Type: text/plain",
+                    b"Content-Length: " + payload,
+                ]
+                response = b"\r\n".join(headers) + b"\r\n\r\n"
+                client_socket.send(response)
+        except HTTPException as error:
+            logging.exception("HTTPException has occured", error)
+

@@ -1,7 +1,7 @@
 """ This is a testing suite for RequestQueue class """
 import pytest
 
-from src.mengine.implementations.connection import ConcreteConnection
+from src.mengine.implementations.concrete_connection import ConcreteConnection
 from src.mengine.implementations.request_queue import RequestQueue
 
 
@@ -15,6 +15,7 @@ def mock_reqest_queue():
 def mock_connection():
     """ Creates a Connection instance for test cases """
     return ConcreteConnection(requester_ip="localhost", payload=b'123')
+
 
 class TestRequestQueue:
     """

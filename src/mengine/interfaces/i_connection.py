@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Connection(ABC):
+class IConnection(ABC):
 
     @abstractmethod
     def get_requester_ip(self):

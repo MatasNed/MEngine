@@ -1,11 +1,13 @@
 import logging
-from socket import socket
 
-from src.mengine.implementations.connection import ConcreteConnection
+from src.mengine.exceptions.exceptions import ValidationError, HTTPException
+from src.mengine.implementations.concrete_connection import ConcreteConnection
+from src.mengine.interfaces.i_connection import IConnection
 from src.mengine.interfaces.i_process_manager import IProcessManager
 from src.mengine.utils.log_utils import logging_deco
 from src.mengine.implementations.request_queue import RequestQueue
 from src.mengine.enums.protocols import Protocol
+from src.mengine.enums.http_version import Version
 
 
 class ConcreteProcessManager(IProcessManager):
@@ -17,29 +19,63 @@ class ConcreteProcessManager(IProcessManager):
     @logging_deco
     def handle_connection(self, addr, conn):
         print(f"Handling connection from {addr}")
-        with conn:
-            data = conn.recv(1024)
-
-            c_conn = ConcreteConnection(addr, data)
-
-            self.process_connection(c_conn)
-            self.__parse_connection(c_conn)
-
-    def process_connection(self, connection: ConcreteConnection):
         try:
-            decoded_str = connection.get_payload().decode().split(" ")
+            chunks = []
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                chunks.append(data)
+                if b"\r\n\r\n" in data:
+                    break
 
-            for val in range(2):
-                if decoded_str[val] == 'GET':
-                    connection.set_method(self.protocols.GET)
-                    self.queue.enque(connection)
-                elif decoded_str[val] == 'POST':
-                    connection.set_method(self.protocols.POST)
-                    self.queue.enque(connection)
-        except ValueError:
-            logging.error("The protocol could not be processed")
+            request = self.__parse_connection(conn, addr, chunks)
+            response = self.generate_response(request)
+            conn.sendall(response)
 
-    # useless
-    def __parse_connection(self, connection: ConcreteConnection):
+        except Exception as e:
+            logging.exception(f"Unhandled exception on {addr}", e)
+        finally:
+            conn.close()
 
-        print(connection.get_payload().decode().split(" "))
+    def generate_response(self, connection: IConnection):
+        body = b"he"
+        headers = [
+            b"HTTP/1.1 200 OK",
+            b"Content-Type: text/plain",
+            b"Content-Length: " + str(len(body)).encode(),
+            b"Connection: close",
+        ]
+        response = b"\r\n".join(headers) + b"\r\n\r\n" + body
+        return response
+
+    def __parse_connection(self, conn, addr, data):
+        processed_payload = []
+        for byte_chunk in data:
+            decoded = byte_chunk.decode().split("\r\n")
+            processed_payload.extend(decoded)
+
+            length = len(processed_payload)
+
+            if length == 0:
+                return HTTPException
+
+            if length >= 3:
+                header_protocol, path, version = (
+                    processed_payload[0].split(" "))
+
+                # Constructing the connection
+                try:
+                    new_connection = ConcreteConnection(
+                        addr, processed_payload)
+                    new_connection.set_method(Protocol(header_protocol))
+                    new_connection.set_version(Version(version))
+                    self.queue.enque(new_connection)
+
+                    print("Finished processing")
+                except ValidationError as error:
+                    logging.error("Caught error when parsing payload %s", error)
+
+            else:
+                raise HTTPException
+        return new_connection
