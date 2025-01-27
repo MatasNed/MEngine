@@ -4,7 +4,7 @@ import socket
 from src.mengine.exceptions.exceptions import HTTPException
 from src.mengine.interfaces.i_request_dispatcher import IRequestDispatcher
 from src.mengine.implementations.request_queue import RequestQueue
-from src.mengine.validtors.http_validator import HTTPValidator
+from src.mengine.validators.http_validator import HTTPValidator
 
 
 class RequestDispatcher(IRequestDispatcher):

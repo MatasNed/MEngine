@@ -1,5 +1,6 @@
 .idea*
 .venv*
 test.log
+.coverage
 .DS_Store
 __pycache__/

@@ -1,7 +1,7 @@
 import pytest
 
 from src.mengine.exceptions.exceptions import ValidationError
-from src.mengine.validtors.http_validator import HTTPValidator
+from src.mengine.validators.http_validator import HTTPValidator
 
 @pytest.fixture(scope='class')
 def http_validator():
