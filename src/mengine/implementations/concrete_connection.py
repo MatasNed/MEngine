@@ -3,11 +3,11 @@ from src.mengine.interfaces.i_connection import IConnection
 
 class ConcreteConnection(IConnection):
 
-    def __init__(self, requester_ip, payload):
+    def __init__(self, requester_ip, payload, method, version):
         self.requester_ip_and_port = tuple(requester_ip)
         self.payload = payload
-        self.method = None
-        self.version = None
+        self.method = method
+        self.version = version
 
     def get_requester_ip(self):
         return self.requester_ip_and_port

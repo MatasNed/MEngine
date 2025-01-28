@@ -34,14 +34,14 @@ class ConcreteProcessManager(IProcessManager):
             conn.sendall(response)
 
         except Exception as e:
-            logging.exception(f"Unhandled exception on {addr}", e)
+            logging.exception(f"Unhandled exception on {e}", e)
         finally:
             conn.close()
 
     def generate_response(self, connection: IConnection):
-        body = b"he"
+        body = b"test for now"
         headers = [
-            b"HTTP/1.1 200 OK",
+            f"{connection.get_version()} 200 OK".encode(),
             b"Content-Type: text/plain",
             b"Content-Length: " + str(len(body)).encode(),
             b"Connection: close",
@@ -55,27 +55,25 @@ class ConcreteProcessManager(IProcessManager):
             decoded = byte_chunk.decode().split("\r\n")
             processed_payload.extend(decoded)
 
-            length = len(processed_payload)
+        length = len(processed_payload[0])
 
-            if length == 0:
-                return HTTPException
+        if length == 0:
+            return HTTPException
 
-            if length >= 3:
-                header_protocol, path, version = (
-                    processed_payload[0].split(" "))
+        if length >= 3:
+            header_protocol, path, version = (processed_payload[0].split(" "))
 
-                # Constructing the connection
-                try:
-                    new_connection = ConcreteConnection(
-                        addr, processed_payload)
-                    new_connection.set_method(Protocol(header_protocol))
-                    new_connection.set_version(Version(version))
-                    self.queue.enque(new_connection)
+            # Constructing the connection
+            try:
+                new_connection = ConcreteConnection(
+                    addr, processed_payload)
+                new_connection.set_method(Protocol(header_protocol))
+                new_connection.set_version(Version(version))
+                self.queue.enque(new_connection)
 
-                    print("Finished processing")
-                except ValidationError as error:
-                    logging.error("Caught error when parsing payload %s", error)
-
-            else:
-                raise HTTPException
+                print("Finished processing")
+            except ValidationError as error:
+                logging.error("Caught error when parsing payload %s", error)
+        else:
+            raise HTTPException
         return new_connection

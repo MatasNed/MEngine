@@ -2,6 +2,7 @@ import logging
 import socket
 
 from src.mengine.exceptions.exceptions import HTTPException
+from src.mengine.exceptions.exceptions import ValidationError
 from src.mengine.interfaces.i_request_dispatcher import IRequestDispatcher
 from src.mengine.implementations.request_queue import RequestQueue
 from src.mengine.validators.http_validator import HTTPValidator
@@ -32,6 +33,7 @@ class RequestDispatcher(IRequestDispatcher):
                 ]
                 response = b"\r\n".join(headers) + b"\r\n\r\n"
                 client_socket.send(response)
-        except HTTPException as error:
-            logging.exception("HTTPException has occured", error)
+        except ValidationError as error:
+            logging.exception("Validation error on: %s", error)
+            raise HTTPException("Invalid HTTP data") from error
 
