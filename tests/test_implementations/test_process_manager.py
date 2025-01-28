@@ -26,7 +26,7 @@ class TestConcreteProcessManager:
 
         mock_connection.recv.assert_called_with(1024)
         # Very close to actual implementation need to make it more generic
-        mock_connection.sendall.assert_called_with(b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nhe')
+        mock_connection.sendall.assert_called_with(b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\nConnection: close\r\n\r\ntest for now')
 
     def test_handle_connection_failed(self, stub_request_queue, stub_protocol):
         with pytest.raises(Exception) as excp_msg:
@@ -43,7 +43,7 @@ class TestConcreteProcessManager:
         structure = b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\nConnection: close\r\n\r\ntest for now"
 
         mock_con = MagicMock()
-        mock_con.get_version.return_value = "HTTP/1.1"
+        mock_con.get_version.return_value.value = "HTTP/1.1"
 
         test_class_instance = ConcreteProcessManager(stub_request_queue, stub_protocol)
 

@@ -31,7 +31,7 @@ class TestRequestDispatcher:
         expected = (
             b"GET / HTTP/1.1\r\n"
             b"Content-Type: text/plain\r\n"
-            b"Content-Length: b'some payload'\r\n"
+            b"Content-Length: 15\r\n"
             b"\r\n"
         )
         mock_socket_instance.send.assert_called_once_with(expected)

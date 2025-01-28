@@ -41,7 +41,7 @@ class ConcreteProcessManager(IProcessManager):
     def generate_response(self, connection: IConnection):
         body = b"test for now"
         headers = [
-            f"{connection.get_version()} 200 OK".encode(),
+            f"{connection.get_version().value} 200 OK".encode(),
             b"Content-Type: text/plain",
             b"Content-Length: " + str(len(body)).encode(),
             b"Connection: close",

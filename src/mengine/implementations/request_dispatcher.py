@@ -29,7 +29,7 @@ class RequestDispatcher(IRequestDispatcher):
                 headers = [
                     f"{method} / {version}".encode(),
                     b"Content-Type: text/plain",
-                    b"Content-Length: " + payload,
+                    b"Content-Length: " + str(len(payload)).encode(),
                 ]
                 response = b"\r\n".join(headers) + b"\r\n\r\n"
                 client_socket.send(response)
