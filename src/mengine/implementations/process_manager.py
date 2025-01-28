@@ -55,25 +55,27 @@ class ConcreteProcessManager(IProcessManager):
             decoded = byte_chunk.decode().split("\r\n")
             processed_payload.extend(decoded)
 
-        length = len(processed_payload[0])
 
-        if length == 0:
-            return HTTPException
+        if not processed_payload or not processed_payload[0]:
+            raise HTTPException("Malformed headers")
 
-        if length >= 3:
+
+        try:
             header_protocol, path, version = (processed_payload[0].split(" "))
+        except ValueError:
+            raise HTTPException("Error processing headers")
 
-            # Constructing the connection
-            try:
-                new_connection = ConcreteConnection(
-                    addr, processed_payload)
-                new_connection.set_method(Protocol(header_protocol))
-                new_connection.set_version(Version(version))
-                self.queue.enque(new_connection)
 
-                print("Finished processing")
-            except ValidationError as error:
-                logging.error("Caught error when parsing payload %s", error)
-        else:
-            raise HTTPException
+        # Constructing the connection
+        try:
+            new_connection = ConcreteConnection(
+                addr, processed_payload)
+            new_connection.set_method(Protocol(header_protocol))
+            new_connection.set_version(Version(version))
+            self.queue.enque(new_connection)
+
+            print("Finished processing")
+        except ValidationError as error:
+            logging.error("Caught error when parsing payload %s", error)
+            raise HTTPException("Invalid request") from error
         return new_connection
