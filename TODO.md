@@ -11,11 +11,11 @@
    3. ~~Return the response to the client~~
 3. ~~Threads for each conn?~~
 4. Test coverage for implementations
-4. Comprehensive logging
-4. Setup queuing or threadpool for handling conns
-5. Requests and it's forwarding should be dynamic.
-6. What happens if the connection hangs?
-7. Healthcheck the backend?
+5. Comprehensive logging
+6. Setup queuing or threadpool for handling conns
+7. Requests and it's forwarding should be dynamic.
+8. What happens if the connection hangs?
+9. Healthcheck the backend?
 
 
 ----
