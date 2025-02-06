@@ -29,10 +29,17 @@ class RequestDispatcher(IRequestDispatcher):
                 headers = [
                     f"{method} / {version}".encode(),
                     b"Content-Type: text/plain",
-                    b"Content-Length: " + str(len(payload)).encode(),
+                   # b"Content-Length: " + str(len(payload)).encode(),
                 ]
-                response = b"\r\n".join(headers) + b"\r\n\r\n"
-                client_socket.send(response)
+                request = b"\r\n".join(headers) + b"\r\n\r\n"
+                print(request)
+                client_socket.send(request)
+
+                # Send to the one that is encapsulated in the IP that's who needs the response,
+                # but isn't the conn closed already?
+                # Someone must be blokcing the waiting thread or else we terminate the conn without waiting for the response
+                responses = client_socket.recv(4096)
+                print(responses)
         except ValidationError as error:
             logging.exception("Validation error on: %s", error)
             raise HTTPException("Invalid HTTP data") from error

@@ -10,7 +10,7 @@
 2. ~~Forward it the request appropriate backend (even it's only 1)~~
    3. ~~Return the response to the client~~
 3. ~~Threads for each conn?~~
-4. Test coverage for implementations
+4. ~~Test coverage for implementations~~
 5. Comprehensive logging
 6. Setup queuing or threadpool for handling conns
 7. Requests and it's forwarding should be dynamic.
