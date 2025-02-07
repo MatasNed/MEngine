@@ -3,6 +3,7 @@
       2. ~~header extraction~~
          3. ~~both listen and dispatch should be on it's own threads to avoid blocking/sequencing problems~~
          5. ~~configure a way to setup target backends and write some tests~~
+   2. Core Functionality (SocketHandler with Python3s IO threads)
    2. path? We can target different applications on the backend
    3. fragmented data?
    4. errors?

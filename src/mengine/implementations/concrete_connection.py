@@ -3,9 +3,10 @@ from src.mengine.interfaces.i_connection import IConnection
 
 class ConcreteConnection(IConnection):
 
-    def __init__(self, requester_ip, payload, method="GET", version="HTTP/1.1"):
+    def __init__(self, requester_ip, payload, response_sock, method="GET", version="HTTP/1.1"):
         self.requester_ip_and_port = tuple(requester_ip)
         self.payload = payload
+        self.response_sock = response_sock
         self.method = method
         self.version = version
 
@@ -32,3 +33,9 @@ class ConcreteConnection(IConnection):
 
     def set_version(self, version_val):
         self.version = version_val
+
+    def get_response_sock(self):
+        return self.response_sock
+
+    def set_response_sock(self, response_sock):
+        self.response_sock = response_sock
