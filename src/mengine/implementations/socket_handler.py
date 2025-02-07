@@ -1,6 +1,5 @@
 import logging
-from socket import socket
-
+from socket import socket, AF_INET, SOCK_STREAM
 from src.mengine.interfaces.i_connection import IConnection
 from src.mengine.interfaces.i_socket_handler import ISocketHandler
 from src.mengine.exceptions.exceptions import HTTPException, ValidationError
@@ -11,12 +10,12 @@ from src.mengine.enums.http_version import Version
 
 class SocketHandler(ISocketHandler):
 
-    def __init__(self, client_addr, client_socket, backend_host, backend_port):
+    def __init__(self, client_addr, client_socket, backend_host='0.0.0.0', backend_port=9000):
         self.addr = client_addr
         self.conn = client_socket
         self.backend_host = backend_host
         self.backend_port = backend_port
-        self.backend_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.backend_conn = socket(AF_INET, SOCK_STREAM)
 
 
     def read_tcp_conn(self, client_addr, client_socket):
@@ -37,35 +36,45 @@ class SocketHandler(ISocketHandler):
         except Exception as e:
             logging.exception(f"Unhandled exception on {client_addr}: {e}", e)
 
-
     def __parse_connection(self, addr, data, sock):
         processed_payload = []
         for byte_chunk in data:
             decoded = byte_chunk.decode().split("\r\n")
             processed_payload.extend(decoded)
 
-
         if not processed_payload or not processed_payload[0]:
             raise HTTPException("Malformed headers")
 
-
         try:
-            header_protocol, path, version = (processed_payload[0].split(" "))
-        except ValueError:
-            raise HTTPException("Error processing headers")
+            parts = processed_payload[0].split(" ")
 
+            # Detect whether it's a request or a response
+            if parts[0].startswith("HTTP/"):  # RESPONSE format (HTTP/1.1 200 OK)
+                http_version, status_code, *status_message = parts
+                status_message = " ".join(status_message)
 
-        # Constructing the connection
-        try:
-            new_connection = ConcreteConnection(
-                addr, processed_payload, sock)
-            new_connection.set_method(Protocol(header_protocol))
-            new_connection.set_version(Version(version))
+                print(f"Detected Response: Version={http_version}, Status Code={status_code}, Message={status_message}")
+
+                new_connection = ConcreteConnection(addr, processed_payload, sock)
+                new_connection.set_version(Version(http_version))
+                new_connection.response_sock = self.backend_conn
+
+            else:  # REQUEST format (GET / HTTP/1.1)
+                method, path, http_version = parts
+
+                print(f"Detected Request: Method={method}, Path={path}, Version={http_version}")
+
+                new_connection = ConcreteConnection(addr, processed_payload, sock)
+                new_connection.set_method(Protocol(method))
+                new_connection.set_version(Version(http_version))
+                new_connection.set_path(path)
 
             print("Finished processing")
-        except ValidationError as error:
-            logging.error("Caught error when parsing payload %s", error)
-            raise HTTPException("Invalid request") from error
+
+        except KeyError as e:
+            raise HTTPException(f"Invalid HTTP request component: {e}")
+        except ValueError:
+            raise HTTPException("Error processing headers")
         return new_connection
 
     def generate_response(self, connection: IConnection, response_code):
@@ -81,12 +90,16 @@ class SocketHandler(ISocketHandler):
     def send_request(self, connection: IConnection) -> IConnection:
         self.backend_conn.settimeout(10)
 
+        path = connection.get_path()
+        if path == None:
+            path = '/'
+        print(connection.get_version().value)
         headers = [
-            f"{connection.get_method()} {connection.get_path()} {connection.get_version()}".encode(),
+            f"{connection.get_method().value} {path} {connection.get_version().value}".encode(),
             b"Content-Type: text/plain",
             b"Content-Length: " + str(len(connection.get_payload())).encode(),
         ]
-        request = b"\r\n".join(headers) + b"\r\n\r\n" + connection.get_payload().encode()
+        request = b"\r\n".join(headers) + b"\r\n\r\n" + str(len(connection.get_payload())).encode()
 
         try:
             self.backend_conn.connect((self.backend_host, self.backend_port))

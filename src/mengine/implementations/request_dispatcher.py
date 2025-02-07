@@ -16,9 +16,9 @@ class RequestDispatcher(IRequestDispatcher):
     host = "0.0.0.0"
     port = 9000
 
-    def __init__(self, dispatch_queue: RequestQueue, socket_handler: ISocketHandler):
+    def __init__(self, dispatch_queue: RequestQueue):
         self.dispatch_queue = dispatch_queue
-        self.socket_handler = socket_handler
+        self.socket_handler = None
 
     def dispatch_request(self):
         try:
@@ -26,11 +26,8 @@ class RequestDispatcher(IRequestDispatcher):
             while self.dispatch_queue.size() != 0:
                 message = self.dispatch_queue.dequeu()
 
-                self.socket_handler = SocketHandler(message.get_requester_ip_and_port(),
-                                                    message.get_response_sock,
-                                                    self.host,
-                                                    self.port)
-
+                self.socket_handler = SocketHandler(message.get_requester_ip(),
+                                                    message.get_response_sock)
 
                 backend_response = self.socket_handler.send_request(message)
 
@@ -38,7 +35,7 @@ class RequestDispatcher(IRequestDispatcher):
                 # but isn't the conn closed already?
                 # Someone must be blokcing the waiting thread or else we terminate the conn without waiting for the response
 
-                E#nqueue to completed requests
+                #nqueue to completed requests
                 # CompletedRequestQueue.enque(backend_response)
                 # CompletedRequestQueue.mark_completed_request(backend_response)
                 print(backend_response)

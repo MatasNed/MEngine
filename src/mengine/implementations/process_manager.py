@@ -8,6 +8,7 @@ from src.mengine.utils.log_utils import logging_deco
 from src.mengine.implementations.request_queue import RequestQueue
 from src.mengine.enums.protocols import Protocol
 from src.mengine.enums.http_version import Version
+from src.mengine.implementations.socket_handler import SocketHandler
 
 
 class ConcreteProcessManager(IProcessManager):
@@ -17,19 +18,17 @@ class ConcreteProcessManager(IProcessManager):
         self.protocols = protocols
 
     @logging_deco
+    @logging_deco
     def handle_connection(self, addr, conn):
         print(f"Handling connection from {addr}")
         try:
-            chunks = []
-            while True:
-                data = conn.recv(1024)
-                if not data:
-                    break
-                chunks.append(data)
-                if b"\r\n\r\n" in data:
-                    break
+            # Use SocketHandler instead of parsing manually
+            socket_handler = SocketHandler(addr, conn)  # No need to pass backend_host and backend_port
+            request = socket_handler.read_tcp_conn(addr, conn)
 
-            request = self.__parse_connection(conn, addr, chunks)
+            # Enqueue the parsed request
+            self.queue.enque(request)
+
             response = self.generate_response(request)
             conn.sendall(response)
 
@@ -49,33 +48,4 @@ class ConcreteProcessManager(IProcessManager):
         response = b"\r\n".join(headers) + b"\r\n\r\n" + body
         return response
 
-    def __parse_connection(self, conn, addr, data):
-        processed_payload = []
-        for byte_chunk in data:
-            decoded = byte_chunk.decode().split("\r\n")
-            processed_payload.extend(decoded)
 
-
-        if not processed_payload or not processed_payload[0]:
-            raise HTTPException("Malformed headers")
-
-
-        try:
-            header_protocol, path, version = (processed_payload[0].split(" "))
-        except ValueError:
-            raise HTTPException("Error processing headers")
-
-
-        # Constructing the connection
-        try:
-            new_connection = ConcreteConnection(
-                addr, processed_payload)
-            new_connection.set_method(Protocol(header_protocol))
-            new_connection.set_version(Version(version))
-            self.queue.enque(new_connection)
-
-            print("Finished processing")
-        except ValidationError as error:
-            logging.error("Caught error when parsing payload %s", error)
-            raise HTTPException("Invalid request") from error
-        return new_connection
