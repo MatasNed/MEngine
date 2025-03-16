@@ -1,3 +1,6 @@
+# Housekeeping
+* Built with Python3.10
+
 # Context
 
 * There are various files that explain high-level design
