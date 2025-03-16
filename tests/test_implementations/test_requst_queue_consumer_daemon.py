@@ -8,7 +8,7 @@ class TestRequestQueueConsumerDaemon(IsolatedAsyncioTestCase):
     # Patch requires argument to the function to be passed
     @patch('asyncio.sleep')
     async def test_consume(self, mock_sleep):
-        # Mocking the queue
+        # Mocking the queue, not using AsyncMock as queue itself is sync
         mock_queue = MagicMock()
 
         # Instantiation
@@ -23,3 +23,12 @@ class TestRequestQueueConsumerDaemon(IsolatedAsyncioTestCase):
         # Expectation
         assert mock_queue.dispatch_request.called
 
+    def test_stop(self):
+        # Instance
+        instance = RequestQueueConsumerDaemon(MagicMock(), 0)
+
+        # Logic
+        instance.stop()
+
+        # Actually is changed
+        assert instance.stop_event.is_set()
