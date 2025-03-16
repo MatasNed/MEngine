@@ -1,6 +1,4 @@
 import asyncio
-
-from time import sleep
 from src.mengine.interfaces.i_request_queue_consumer import IRequestQueueConsumer
 from src.mengine.interfaces.i_request_dispatcher import IRequestDispatcher
 from src.mengine.utils.log_utils import logging_deco

@@ -1,25 +1,25 @@
-import threading
-from unittest.mock import MagicMock
+from unittest.async_case import IsolatedAsyncioTestCase
+from unittest.mock import MagicMock, patch
 from src.mengine.implementations.request_queue_consumer_daemon import RequestQueueConsumerDaemon
 
 
-class TestRequestQueueConsumerDaemon:
+class TestRequestQueueConsumerDaemon(IsolatedAsyncioTestCase):
 
-    def test_consume(self):
-        # Mocking out the dependency
+    # Patch requires argument to the function to be passed
+    @patch('asyncio.sleep')
+    async def test_consume(self, mock_sleep):
+        # Mocking the queue
         mock_queue = MagicMock()
 
-        # Instance of the tested class
-        daemon = RequestQueueConsumerDaemon(mock_queue, timer=0.1)
+        # Instantiation
+        daemon = RequestQueueConsumerDaemon(mock_queue, 0)
 
-        # Running on seprate thread or else while loop will block the thread
-        running_on_seprate_thread = threading.Thread(target=daemon.consume)
-        running_on_seprate_thread.start()
+        # Sets false first followed by a True
+        daemon.stop_event.is_set = MagicMock(side_effect=[False, True])
 
-        # Stopping the daemon to terminate the blocking thread from the main
-        daemon.stop()
+        # Actual logic
+        await daemon.consume()
 
-        # Reaping the result
-        running_on_seprate_thread.join()
-
+        # Expectation
         assert mock_queue.dispatch_request.called
+
