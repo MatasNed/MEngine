@@ -1,5 +1,6 @@
 import time
 import threading
+import asyncio
 
 from src.mengine.implementations import server_manager
 from src.mengine.implementations import connection_manager
@@ -10,7 +11,7 @@ from src.mengine.enums import protocols
 from src.mengine.implementations import request_queue_consumer_daemon
 
 
-def main():
+async def main():
     # Initialize and run your class
     q = request_queue.RequestQueue()
     proc_mg = process_manager.ConcreteProcessManager(q, protocols.Protocol)
@@ -18,18 +19,17 @@ def main():
     con_mg = connection_manager.ConnectionManager(proc_mg)
 
     daemon = request_queue_consumer_daemon.RequestQueueConsumerDaemon(disp, 1)
-
-    deamon_t = threading.Thread(target=daemon.consume, daemon=True)
-    deamon_t.start()
+    asyncio.create_task(daemon.consume())
 
     instance = server_manager.ServerManager(con_mg, disp)
-    instance.start_up_conn()
 
-    time.sleep(10)
+    # I have to move this listen() block call away from main thread to allow asyncio event loop to run
+    await asyncio.to_thread(instance.start_up_conn)
+
     daemon.stop()
-    deamon_t.join()
+
 
 
 # Check if the script is being run directly
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
